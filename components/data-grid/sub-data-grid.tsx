@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
+// import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,287 +19,11 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-import type { VariantProps } from 'class-variance-authority';
 import { SquareMinus, SquarePlus, User } from 'lucide-react';
 
-interface PaymentHistoryItem {
-  month: string; // e.g., '2025-01' (Year-Month)
-  status: 'Paid' | 'Pending' | 'Late' | 'Waived';
-  amountPaid: string; // The amount paid for the month (should match the monthlyRent in Data)
-  paymentDate: string; // Date of payment (optional if Pending)
-}
+import { PaymentHistoryItem, ResidencePaymentData, residencePayments } from '@/components/mock-data/mockData';
 
-interface ResidencePaymentData {
-  id: string; // Unique ID for the residence/lease
-  unitNumber: string; // Apartment unit number, e.g., '101'
-  tenantName: string; // Name of the resident/customer
-  tenantPhone: string; // Phone number of the resident (replaces customerEmail)
-  tenantAvatar: string; // Tenant's avatar (retained)
-  monthlyRent: string; // The standard monthly rent amount
-  currentStatus: {
-    label: string; // Current status of the unit (e.g., 'Occupied', 'Vacant', 'Lease Ending')
-    variant: VariantProps<typeof Badge>['variant']; // For UI styling
-  };
-  paymentHistory: PaymentHistoryItem[]; // Detailed monthly payment records
-}
 
-const residencePayments: ResidencePaymentData[] = [
-  {
-    id: '1',
-    unitNumber: '101',
-    tenantName: 'John Smith',
-    tenantPhone: '(555) 123-4567',
-    tenantAvatar: '1.png',
-    monthlyRent: '$1,500.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'primary',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Paid', amountPaid: '$1,500.00', paymentDate: '2025-09-01' },
-      { month: '2025-10', status: 'Paid', amountPaid: '$1,500.00', paymentDate: '2025-10-02' },
-      { month: '2025-11', status: 'Pending', amountPaid: '$1,500.00', paymentDate: '' },
-    ],
-  },
-  {
-    id: '2',
-    unitNumber: '102',
-    tenantName: 'Sarah Johnson',
-    tenantPhone: '(555) 234-5678',
-    tenantAvatar: '2.png',
-    monthlyRent: '$1,250.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'info',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Late', amountPaid: '$1,250.00', paymentDate: '2025-09-05' },
-      { month: '2025-10', status: 'Paid', amountPaid: '$1,250.00', paymentDate: '2025-10-01' },
-      { month: '2025-11', status: 'Pending', amountPaid: '$1,250.00', paymentDate: '' },
-    ],
-  },
-  {
-    id: '3',
-    unitNumber: '103',
-    tenantName: 'Mike Davis',
-    tenantPhone: '(555) 345-6789',
-    tenantAvatar: '3.png',
-    monthlyRent: '$1,800.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'success',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Paid', amountPaid: '$1,800.00', paymentDate: '2025-08-30' },
-      { month: '2025-10', status: 'Paid', amountPaid: '$1,800.00', paymentDate: '2025-09-28' },
-      { month: '2025-11', status: 'Paid', amountPaid: '$1,800.00', paymentDate: '2025-10-31' },
-    ],
-  },
-  {
-    id: '4',
-    unitNumber: '201',
-    tenantName: 'Emily Wilson',
-    tenantPhone: '(555) 456-7890',
-    tenantAvatar: '4.png',
-    monthlyRent: '$1,400.00',
-    currentStatus: {
-      label: 'Vacant',
-      variant: 'destructive',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Waived', amountPaid: '$1,400.00', paymentDate: '2025-09-01' },
-      { month: '2025-10', status: 'Waived', amountPaid: '$1,400.00', paymentDate: '2025-10-01' },
-      { month: '2025-11', status: 'Waived', amountPaid: '$1,400.00', paymentDate: '2025-11-01' },
-    ],
-  },
-  {
-    id: '5',
-    unitNumber: '202',
-    tenantName: 'David Brown',
-    tenantPhone: '(555) 567-8901',
-    tenantAvatar: '5.png',
-    monthlyRent: '$1,100.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'warning',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Pending', amountPaid: '$1,100.00', paymentDate: '' },
-      { month: '2025-10', status: 'Late', amountPaid: '$1,100.00', paymentDate: '2025-10-04' },
-      { month: '2025-11', status: 'Pending', amountPaid: '$1,100.00', paymentDate: '' },
-    ],
-  },
-  {
-    id: '6',
-    unitNumber: '203',
-    tenantName: 'Lisa Anderson',
-    tenantPhone: '(555) 678-9012',
-    tenantAvatar: '6.png',
-    monthlyRent: '$1,350.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'primary',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Paid', amountPaid: '$1,350.00', paymentDate: '2025-09-01' },
-      { month: '2025-10', status: 'Paid', amountPaid: '$1,350.00', paymentDate: '2025-10-01' },
-      { month: '2025-11', status: 'Late', amountPaid: '$1,350.00', paymentDate: '2025-11-03' },
-    ],
-  },
-  {
-    id: '7',
-    unitNumber: '301',
-    tenantName: 'Robert Taylor',
-    tenantPhone: '(555) 789-0123',
-    tenantAvatar: '7.png',
-    monthlyRent: '$1,650.00',
-    currentStatus: {
-      label: 'Lease Ending',
-      variant: 'info',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Paid', amountPaid: '$1,650.00', paymentDate: '2025-09-01' },
-      { month: '2025-10', status: 'Pending', amountPaid: '$1,650.00', paymentDate: '' },
-      { month: '2025-11', status: 'Pending', amountPaid: '$1,650.00', paymentDate: '' },
-    ],
-  },
-  {
-    id: '8',
-    unitNumber: '302',
-    tenantName: 'Jennifer Martinez',
-    tenantPhone: '(555) 890-1234',
-    tenantAvatar: '8.png',
-    monthlyRent: '$1,050.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'success',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Paid', amountPaid: '$1,050.00', paymentDate: '2025-09-01' },
-      { month: '2025-10', status: 'Paid', amountPaid: '$1,050.00', paymentDate: '2025-10-01' },
-      { month: '2025-11', status: 'Paid', amountPaid: '$1,050.00', paymentDate: '2025-11-01' },
-    ],
-  },
-  {
-    id: '9',
-    unitNumber: '303',
-    tenantName: 'Christopher Lee',
-    tenantPhone: '(555) 901-2345',
-    tenantAvatar: '9.png',
-    monthlyRent: '$1,200.00',
-    currentStatus: {
-      label: 'Vacant',
-      variant: 'destructive',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Waived', amountPaid: '$1,200.00', paymentDate: '2025-09-01' },
-      { month: '2025-10', status: 'Waived', amountPaid: '$1,200.00', paymentDate: '2025-10-01' },
-      { month: '2025-11', status: 'Waived', amountPaid: '$1,200.00', paymentDate: '2025-11-01' },
-    ],
-  },
-  {
-    id: '10',
-    unitNumber: '401',
-    tenantName: 'Amanda White',
-    tenantPhone: '(555) 012-3456',
-    tenantAvatar: '10.png',
-    monthlyRent: '$1,700.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'warning',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Late', amountPaid: '$1,700.00', paymentDate: '2025-09-06' },
-      { month: '2025-10', status: 'Pending', amountPaid: '$1,700.00', paymentDate: '' },
-      { month: '2025-11', status: 'Pending', amountPaid: '$1,700.00', paymentDate: '' },
-    ],
-  },
-  {
-    id: '11',
-    unitNumber: '402',
-    tenantName: 'Michael Garcia',
-    tenantPhone: '(555) 111-2222',
-    tenantAvatar: '11.png',
-    monthlyRent: '$1,450.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'primary',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Paid', amountPaid: '$1,450.00', paymentDate: '2025-09-01' },
-      { month: '2025-10', status: 'Paid', amountPaid: '$1,450.00', paymentDate: '2025-10-01' },
-      { month: '2025-11', status: 'Paid', amountPaid: '$1,450.00', paymentDate: '2025-11-01' },
-    ],
-  },
-  {
-    id: '12',
-    unitNumber: '403',
-    tenantName: 'Jessica Thompson',
-    tenantPhone: '(555) 333-4444',
-    tenantAvatar: '12.png',
-    monthlyRent: '$1,150.00',
-    currentStatus: {
-      label: 'Lease Ending',
-      variant: 'info',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Paid', amountPaid: '$1,150.00', paymentDate: '2025-09-01' },
-      { month: '2025-10', status: 'Paid', amountPaid: '$1,150.00', paymentDate: '2025-10-01' },
-      { month: '2025-11', status: 'Pending', amountPaid: '$1,150.00', paymentDate: '' },
-    ],
-  },
-  {
-    id: '13',
-    unitNumber: '501',
-    tenantName: 'Daniel Rodriguez',
-    tenantPhone: '(555) 555-6666',
-    tenantAvatar: '13.png',
-    monthlyRent: '$1,300.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'success',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Paid', amountPaid: '$1,300.00', paymentDate: '2025-09-01' },
-      { month: '2025-10', status: 'Paid', amountPaid: '$1,300.00', paymentDate: '2025-10-01' },
-      { month: '2025-11', status: 'Paid', amountPaid: '$1,300.00', paymentDate: '2025-11-01' },
-    ],
-  },
-  {
-    id: '14',
-    unitNumber: '502',
-    tenantName: 'Ashley Clark',
-    tenantPhone: '(555) 777-8888',
-    tenantAvatar: '14.png',
-    monthlyRent: '$1,550.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'primary',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Paid', amountPaid: '$1,550.00', paymentDate: '2025-09-01' },
-      { month: '2025-10', status: 'Late', amountPaid: '$1,550.00', paymentDate: '2025-10-05' },
-      { month: '2025-11', status: 'Pending', amountPaid: '$1,550.00', paymentDate: '' },
-    ],
-  },
-  {
-    id: '15',
-    unitNumber: '503',
-    tenantName: 'Kevin Wilson',
-    tenantPhone: '(555) 999-0000',
-    tenantAvatar: '15.png',
-    monthlyRent: '$1,000.00',
-    currentStatus: {
-      label: 'Occupied',
-      variant: 'warning',
-    },
-    paymentHistory: [
-      { month: '2025-09', status: 'Pending', amountPaid: '$1,000.00', paymentDate: '' },
-      { month: '2025-10', status: 'Pending', amountPaid: '$1,000.00', paymentDate: '' },
-      { month: '2025-11', status: 'Pending', amountPaid: '$1,000.00', paymentDate: '' },
-    ],
-  },
-];
 
 // Sub-table component for order items
 function PaymentHistorySubTable({ items }: { items: PaymentHistoryItem[] }) {
@@ -329,7 +53,7 @@ function PaymentHistorySubTable({ items }: { items: PaymentHistoryItem[] }) {
           if (status === 'Paid') variant = 'success';
           else if (status === 'Late') variant = 'destructive';
           else if (status === 'Pending') variant = 'warning';
-          
+
           return (
             <Badge variant={variant} appearance="light">
               {status}
@@ -344,7 +68,7 @@ function PaymentHistorySubTable({ items }: { items: PaymentHistoryItem[] }) {
         header: ({ column }) => <DataGridColumnHeader title="Amount Paid" column={column} />,
         cell: (info) => info.getValue() as string,
         enableSorting: true,
-        size: 150,  
+        size: 150,
       },
       {
         accessorKey: 'paymentDate',
@@ -414,7 +138,7 @@ export default function DataGridDemo() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [expandedRows, setExpandedRows] = useState<ExpandedState>({});
   // Updated default column order to reflect new fields
-  const [columnOrder, setColumnOrder] = useState<string[]>(['expand', 'unitNumber', 'tenantName', 'monthlyRent', 'currentStatus']);
+  const [columnOrder, setColumnOrder] = useState<string[]>(['expand', 'unitNumber', 'tenantName', 'totalAmountPaid', 'currentStatus']);
 
   // Columns now reflect ResidencePaymentData structure
   const columns = useMemo<ColumnDef<ResidencePaymentData>[]>(
@@ -492,9 +216,9 @@ export default function DataGridDemo() {
         size: 120,
       },
       {
-        accessorKey: 'monthlyRent',
-        id: 'monthlyRent',
-        header: ({ column }) => <DataGridColumnHeader title="Monthly Rent" visibility={true} column={column} />,
+        accessorKey: 'totalAmountPaid',
+        id: 'totalAmountPaid',
+        header: ({ column }) => <DataGridColumnHeader title="Total Paid" visibility={true} column={column} />,
         cell: (info) => info.getValue() as string,
         enableSorting: true,
         enableHiding: true,
