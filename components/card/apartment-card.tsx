@@ -30,7 +30,7 @@ export default function ApartmentCard({ apartment }: ApartmentCardProps) {
   // Handle empty roomPlans array
   if (!roomPlans || roomPlans.length === 0) {
     return (
-      <Card className="w-full max-w-sm mx-auto overflow-hidden">
+      <Card className="w-full mx-auto overflow-hidden">
         <CardContent className="p-6">
           <p className="text-gray-500 text-center">No room plans available</p>
         </CardContent>
@@ -40,7 +40,7 @@ export default function ApartmentCard({ apartment }: ApartmentCardProps) {
   const totalUnitsAvailable = roomPlans.reduce((sum, plan) => sum + plan.unitsAvailable, 0);
 
   return (
-    <Card className="w-full max-w-sm mx-auto overflow-hidden hover:shadow-lg transition-shadow duration-300">
+    <Card className="w-full mx-auto overflow-hidden hover:shadow-lg transition-shadow duration-300">
       <div className="relative">
         <Carousel className="w-full">
           <CarouselContent>
